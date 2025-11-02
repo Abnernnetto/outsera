@@ -126,32 +126,98 @@ jobs:
     runs-on: ubuntu-latest
     needs: [api-tests, e2e-orangehrm, e2e-demoblaze]
     if: always()
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: ./_artifacts
+      
+      - name: Configure Pages
+        uses: actions/configure-pages@v5    
 
-      - name: Prepare Pages content
+        - name: Prepare Pages content
         run: |
+          set -e
           mkdir -p ./_site
-          # Playwright HTML
-          if [ -d "./_artifacts/api-playwright-report" ]; then mkdir -p ./_site/api-playwright && cp -r ./_artifacts/api-playwright-report/* ./_site/api-playwright/; fi
-          # Allure (se houver)
-          if [ -d "./_artifacts/api-allure-report" ]; then mkdir -p ./_site/api-allure && cp -r ./_artifacts/api-allure-report/* ./_site/api-allure/; fi
-          # Cucumber reports
-          if [ -d "./_artifacts/e2e-orangehrm-cucumber-report" ]; then mkdir -p ./_site/e2e-orangehrm && cp -r ./_artifacts/e2e-orangehrm-cucumber-report/* ./_site/e2e-orangehrm/; fi
-          if [ -d "./_artifacts/e2e-demoblaze-cucumber-report" ]; then mkdir -p ./_site/e2e-demoblaze && cp -r ./_artifacts/e2e-demoblaze-cucumber-report/* ./_site/e2e-demoblaze/; fi
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
+  
+          # Copia Playwright HTML report (pasta completa)
+          if [ -d "./_artifacts/api-playwright-report" ]; then
+            mkdir -p ./_site/api-playwright
+            cp -r ./_artifacts/api-playwright-report/* ./_site/api-playwright/
+            # Garante que exista um index.html
+            if [ ! -f "./_site/api-playwright/index.html" ]; then
+              echo "<meta http-equiv='refresh' content='0; url=report/index.html'>" > ./_site/api-playwright/index.html
+            fi
+          fi
+  
+          # Copia Allure (se existir)
+          if [ -d "./_artifacts/api-allure-report" ]; then
+            mkdir -p ./_site/api-allure
+            cp -r ./_artifacts/api-allure-report/* ./_site/api-allure/
+            [ -f "./_site/api-allure/index.html" ] || echo "<h1>Allure</h1>" > ./_site/api-allure/index.html
+          fi
+  
+          # Cucumber report - OrangeHRM (artefato é UM arquivo HTML)
+          if [ -d "./_artifacts/e2e-orangehrm-cucumber-report" ]; then
+            mkdir -p ./_site/e2e-orangehrm
+            # move o HTML para virar index.html
+            cp ./_artifacts/e2e-orangehrm-cucumber-report/cucumber-report.html ./_site/e2e-orangehrm/index.html 2>/dev/null || \
+            cp ./_artifacts/e2e-orangehrm-cucumber-report/*.html ./_site/e2e-orangehrm/index.html
+          fi
+  
+          # Cucumber report - DemoBlaze (artefato é UM arquivo HTML)
+          if [ -d "./_artifacts/e2e-demoblaze-cucumber-report" ]; then
+            mkdir -p ./_site/e2e-demoblaze
+            cp ./_artifacts/e2e-demoblaze-cucumber-report/cucumber-report.html ./_site/e2e-demoblaze/index.html 2>/dev/null || \
+            cp ./_artifacts/e2e-demoblaze-cucumber-report/*.html ./_site/e2e-demoblaze/index.html
+          fi
+  
+          # Cria o index.html raiz com links
+          cat > ./_site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8"/>
+            <meta name="viewport" content="width=device-width,initial-scale=1"/>
+            <title>Test Reports</title>
+            <style>
+              body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;max-width:900px;margin:40px auto;padding:0 16px;}
+              h1{margin-bottom:8px}
+              .card{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:12px 0}
+              a{color:#0b5fff;text-decoration:none}
+              a:hover{text-decoration:underline}
+              .grid{display:grid;gap:12px}
+              @media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}
+            </style>
+          </head>
+          <body>
+            <h1>Relatórios de Teste</h1>
+            <p>Build publicado automaticamente pelo GitHub Actions.</p>
+            <div class="grid">
+              <div class="card">
+                <h2>API • Playwright HTML</h2>
+                <p>Relatório dos testes de API (Swagger Petstore).</p>
+                <p><a href="api-playwright/">Abrir relatório</a></p>
+              </div>
+              <div class="card">
+                <h2>API • Allure (se disponível)</h2>
+                <p>Relatório Allure gerado a partir do allure-results.</p>
+                <p><a href="api-allure/">Abrir relatório</a></p>
+              </div>
+              <div class="card">
+                <h2>E2E • OrangeHRM (Cucumber)</h2>
+                <p>Relatório HTML gerado pelo Cucumber.</p>
+                <p><a href="e2e-orangehrm/">Abrir relatório</a></p>
+              </div>
+              <div class="card">
+                <h2>E2E • DemoBlaze (Cucumber)</h2>
+                <p>Relatório HTML gerado pelo Cucumber.</p>
+                <p><a href="e2e-demoblaze/">Abrir relatório</a></p>
+              </div>
+            </div>
+          </body>
+          </html>
+          HTML
       
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
