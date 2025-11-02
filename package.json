@@ -1,0 +1,35 @@
+{
+  "name": "avaliacaooutsera",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test:api": "playwright test tests/api",
+    "report:api": "playwright show-report",
+    "test:e2e:demoblaze": "cucumber-js --config ./cucumber.cjs tests/e2e/demoblaze/features/**/*.feature",
+    "test:e2e:orange": "cucumber-js --config ./cucumber.cjs tests/e2e/orangehrm/features/**/*.feature",
+    "test:e2e": "cucumber-js",
+    "test:e2e:report": "cucumber-js --format html:reports/cucumber-report.html",
+    "allure:generate": "allure generate allure-results --clean -o allure-report",
+    "allure:open": "allure open allure-report"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@cucumber/cucumber": "^12.2.0",
+    "@cucumber/pretty-formatter": "^2.4.0",
+    "@faker-js/faker": "^8.3.1",
+    "@playwright/test": "^1.56.1",
+    "@types/node": "^24.9.2",
+    "allure-commandline": "^2.34.1",
+    "allure-cucumberjs": "^3.4.2",
+    "allure-playwright": "^3.4.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

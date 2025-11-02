@@ -1,0 +1,22 @@
+# Node & Playwright
+node_modules/
+playwright-report/
+test-results/
+allure-results/
+allure-report/
+reports/
+report/
+dist/
+
+# System
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+
+# Env files
+.env
+.env.*
