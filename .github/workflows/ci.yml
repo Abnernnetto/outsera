@@ -2,9 +2,9 @@ name: CI - API, E2E (Web) with Reports
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [main, master]
   pull_request:
-    branches: [ main, master ]
+    branches: [main, master]
   workflow_dispatch:
 
 permissions:
@@ -21,14 +21,12 @@ jobs:
     name: API Tests (Playwright)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
 
       - name: Install deps
         run: npm ci
@@ -36,26 +34,24 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run API tests
-        run: |
-          npx playwright test tests/api --reporter=list,html
+      - name: Run API tests (HTML report)
+        run: npx playwright test tests/api --reporter=list,html
         env:
           NODE_ENV: test
 
-      # (Opcional) Gera Allure se houver resultados
-      - name: Generate Allure report (if configured)
-        if: always() && hashFiles('allure-results/**') != ''
+      - name: Generate Allure report (if results exist)
+        if: ${{ always() && hashFiles('allure-results/**') != '' }}
         run: npx allure generate allure-results --clean -o allure-report
 
       - name: Upload Playwright HTML report
-        if: always() && hashFiles('report/**') != ''
+        if: ${{ always() && hashFiles('report/**') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: api-playwright-report
           path: report/
 
       - name: Upload Allure report
-        if: always() && hashFiles('allure-report/**') != ''
+        if: ${{ always() && hashFiles('allure-report/**') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: api-allure-report
@@ -65,14 +61,12 @@ jobs:
     name: E2E OrangeHRM (Cucumber + Playwright)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
 
       - name: Install deps
         run: npm ci
@@ -81,11 +75,10 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run OrangeHRM feature(s)
-        run: |
-          npx cucumber-js --config ./cucumber.cjs tests/e2e/orangehrm/features/login.feature
+        run: npx cucumber-js --config ./cucumber.cjs tests/e2e/orangehrm/features/login.feature
 
       - name: Upload Cucumber HTML report
-        if: always() && hashFiles('reports/cucumber-report.html') != ''
+        if: ${{ always() && hashFiles('reports/cucumber-report.html') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: e2e-orangehrm-cucumber-report
@@ -95,14 +88,12 @@ jobs:
     name: E2E DemoBlaze (Cucumber + Playwright)
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: npm
 
       - name: Install deps
         run: npm ci
@@ -111,11 +102,10 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: Run DemoBlaze feature(s)
-        run: |
-          npx cucumber-js --config ./cucumber.cjs tests/e2e/demoblaze/features/checkout.feature
+        run: npx cucumber-js --config ./cucumber.cjs tests/e2e/demoblaze/features/checkout.feature
 
       - name: Upload Cucumber HTML report
-        if: always() && hashFiles('reports/cucumber-report.html') != ''
+        if: ${{ always() && hashFiles('reports/cucumber-report.html') != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: e2e-demoblaze-cucumber-report
@@ -126,60 +116,57 @@ jobs:
     runs-on: ubuntu-latest
     needs: [api-tests, e2e-orangehrm, e2e-demoblaze]
     if: always()
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: ./_artifacts
-      
-      - name: Configure Pages
-        uses: actions/configure-pages@v5    
 
-        - name: Prepare Pages content
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Prepare _site (with index.html)
         run: |
           set -e
-          mkdir -p ./_site
-  
-          # Copia Playwright HTML report (pasta completa)
-          if [ -d "./_artifacts/api-playwright-report" ]; then
-            mkdir -p ./_site/api-playwright
-            cp -r ./_artifacts/api-playwright-report/* ./_site/api-playwright/
-            # Garante que exista um index.html
-            if [ ! -f "./_site/api-playwright/index.html" ]; then
-              echo "<meta http-equiv='refresh' content='0; url=report/index.html'>" > ./_site/api-playwright/index.html
-            fi
+          mkdir -p _site
+
+          # Playwright HTML
+          if [ -d "_artifacts/api-playwright-report" ]; then
+            mkdir -p _site/api-playwright
+            cp -r _artifacts/api-playwright-report/* _site/api-playwright/
+            [ -f "_site/api-playwright/index.html" ] || echo "<meta http-equiv='refresh' content='0; url=./index.html'>" > _site/api-playwright/index.html
           fi
-  
-          # Copia Allure (se existir)
-          if [ -d "./_artifacts/api-allure-report" ]; then
-            mkdir -p ./_site/api-allure
-            cp -r ./_artifacts/api-allure-report/* ./_site/api-allure/
-            [ -f "./_site/api-allure/index.html" ] || echo "<h1>Allure</h1>" > ./_site/api-allure/index.html
+
+          # Allure
+          if [ -d "_artifacts/api-allure-report" ]; then
+            mkdir -p _site/api-allure
+            cp -r _artifacts/api-allure-report/* _site/api-allure/
+            [ -f "_site/api-allure/index.html" ] || echo "<h1>Allure Report</h1>" > _site/api-allure/index.html
           fi
-  
-          # Cucumber report - OrangeHRM (artefato é UM arquivo HTML)
-          if [ -d "./_artifacts/e2e-orangehrm-cucumber-report" ]; then
-            mkdir -p ./_site/e2e-orangehrm
-            # move o HTML para virar index.html
-            cp ./_artifacts/e2e-orangehrm-cucumber-report/cucumber-report.html ./_site/e2e-orangehrm/index.html 2>/dev/null || \
-            cp ./_artifacts/e2e-orangehrm-cucumber-report/*.html ./_site/e2e-orangehrm/index.html
+
+          # Cucumber - OrangeHRM (artefato é um HTML)
+          if [ -d "_artifacts/e2e-orangehrm-cucumber-report" ]; then
+            mkdir -p _site/e2e-orangehrm
+            cp _artifacts/e2e-orangehrm-cucumber-report/*.html _site/e2e-orangehrm/index.html || true
           fi
-  
-          # Cucumber report - DemoBlaze (artefato é UM arquivo HTML)
-          if [ -d "./_artifacts/e2e-demoblaze-cucumber-report" ]; then
-            mkdir -p ./_site/e2e-demoblaze
-            cp ./_artifacts/e2e-demoblaze-cucumber-report/cucumber-report.html ./_site/e2e-demoblaze/index.html 2>/dev/null || \
-            cp ./_artifacts/e2e-demoblaze-cucumber-report/*.html ./_site/e2e-demoblaze/index.html
+
+          # Cucumber - DemoBlaze (artefato é um HTML)
+          if [ -d "_artifacts/e2e-demoblaze-cucumber-report" ]; then
+            mkdir -p _site/e2e-demoblaze
+            cp _artifacts/e2e-demoblaze-cucumber-report/*.html _site/e2e-demoblaze/index.html || true
           fi
-  
-          # Cria o index.html raiz com links
-          cat > ./_site/index.html <<'HTML'
+
+          # index.html raiz
+          cat > _site/index.html <<'HTML'
           <!doctype html>
-          <html lang="en">
+          <html lang="pt-br">
           <head>
             <meta charset="utf-8"/>
             <meta name="viewport" content="width=device-width,initial-scale=1"/>
-            <title>Test Reports</title>
+            <title>Relatórios de Testes</title>
             <style>
               body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;max-width:900px;margin:40px auto;padding:0 16px;}
               h1{margin-bottom:8px}
@@ -192,38 +179,21 @@ jobs:
           </head>
           <body>
             <h1>Relatórios de Teste</h1>
-            <p>Build publicado automaticamente pelo GitHub Actions.</p>
             <div class="grid">
-              <div class="card">
-                <h2>API • Playwright HTML</h2>
-                <p>Relatório dos testes de API (Swagger Petstore).</p>
-                <p><a href="api-playwright/">Abrir relatório</a></p>
-              </div>
-              <div class="card">
-                <h2>API • Allure (se disponível)</h2>
-                <p>Relatório Allure gerado a partir do allure-results.</p>
-                <p><a href="api-allure/">Abrir relatório</a></p>
-              </div>
-              <div class="card">
-                <h2>E2E • OrangeHRM (Cucumber)</h2>
-                <p>Relatório HTML gerado pelo Cucumber.</p>
-                <p><a href="e2e-orangehrm/">Abrir relatório</a></p>
-              </div>
-              <div class="card">
-                <h2>E2E • DemoBlaze (Cucumber)</h2>
-                <p>Relatório HTML gerado pelo Cucumber.</p>
-                <p><a href="e2e-demoblaze/">Abrir relatório</a></p>
-              </div>
+              <div class="card"><h2>API • Playwright HTML</h2><p><a href="api-playwright/">Abrir</a></p></div>
+              <div class="card"><h2>API • Allure</h2><p><a href="api-allure/">Abrir</a></p></div>
+              <div class="card"><h2>E2E • OrangeHRM (Cucumber)</h2><p><a href="e2e-orangehrm/">Abrir</a></p></div>
+              <div class="card"><h2>E2E • DemoBlaze (Cucumber)</h2><p><a href="e2e-demoblaze/">Abrir</a></p></div>
             </div>
           </body>
           </html>
           HTML
-      
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./_site
+          path: _site
 
       - name: Deploy to GitHub Pages
-        id: deployment
+        id: deploy
         uses: actions/deploy-pages@v4
