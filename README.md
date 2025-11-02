@@ -135,36 +135,170 @@ Pipeline configurado para:
 
 Arquivo `.github/workflows/ci.yml`:
 ```yaml
-name: CI Pipeline
+name: CI - API, E2E (Web) with Reports
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  tests:
+  api-tests:
+    name: API Tests (Playwright)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
-          node-version: 22
-      - name: Install dependencies
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install deps
         run: npm ci
+
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
+
       - name: Run API tests
-        run: npm run test:api
-      - name: Run E2E OrangeHRM
-        run: npm run test:e2e:orange
-      - name: Run E2E DemoBlaze
-        run: npm run test:e2e:demoblaze
-      - name: Generate Allure Report
         run: |
-          npm run allure:generate
-          npm run allure:open
+          npx playwright test tests/api --reporter=list,html
+        env:
+          NODE_ENV: test
+
+      # (Opcional) Gera Allure se houver resultados
+      - name: Generate Allure report (if configured)
+        if: always() && hashFiles('allure-results/**') != ''
+        run: npx allure generate allure-results --clean -o allure-report
+
+      - name: Upload Playwright HTML report
+        if: always() && hashFiles('report/**') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-playwright-report
+          path: report/
+
+      - name: Upload Allure report
+        if: always() && hashFiles('allure-report/**') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-allure-report
+          path: allure-report/
+
+  e2e-orangehrm:
+    name: E2E OrangeHRM (Cucumber + Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run OrangeHRM feature(s)
+        run: |
+          npx cucumber-js --config ./cucumber.cjs tests/e2e/orangehrm/features/login.feature
+
+      - name: Upload Cucumber HTML report
+        if: always() && hashFiles('reports/cucumber-report.html') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-orangehrm-cucumber-report
+          path: reports/cucumber-report.html
+
+  e2e-demoblaze:
+    name: E2E DemoBlaze (Cucumber + Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run DemoBlaze feature(s)
+        run: |
+          npx cucumber-js --config ./cucumber.cjs tests/e2e/demoblaze/features/checkout.feature
+
+      - name: Upload Cucumber HTML report
+        if: always() && hashFiles('reports/cucumber-report.html') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-demoblaze-cucumber-report
+          path: reports/cucumber-report.html
+
+  publish-pages:
+    name: Publish Reports to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [api-tests, e2e-orangehrm, e2e-demoblaze]
+    if: always()
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./_artifacts
+
+      - name: Prepare Pages content
+        run: |
+          mkdir -p ./_site
+          # Playwright HTML
+          if [ -d "./_artifacts/api-playwright-report" ]; then mkdir -p ./_site/api-playwright && cp -r ./_artifacts/api-playwright-report/* ./_site/api-playwright/; fi
+          # Allure (se houver)
+          if [ -d "./_artifacts/api-allure-report" ]; then mkdir -p ./_site/api-allure && cp -r ./_artifacts/api-allure-report/* ./_site/api-allure/; fi
+          # Cucumber reports
+          if [ -d "./_artifacts/e2e-orangehrm-cucumber-report" ]; then mkdir -p ./_site/e2e-orangehrm && cp -r ./_artifacts/e2e-orangehrm-cucumber-report/* ./_site/e2e-orangehrm/; fi
+          if [ -d "./_artifacts/e2e-demoblaze-cucumber-report" ]; then mkdir -p ./_site/e2e-demoblaze && cp -r ./_artifacts/e2e-demoblaze-cucumber-report/* ./_site/e2e-demoblaze/; fi
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./_site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
 ```
 
 ---
