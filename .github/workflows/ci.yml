@@ -38,7 +38,6 @@ jobs:
         env:
           NODE_ENV: test
 
-
       - name: Upload Playwright HTML report
         if: ${{ always() && hashFiles('report/**') != '' }}
         uses: actions/upload-artifact@v4
@@ -120,22 +119,14 @@ jobs:
 
       - name: Prepare _site (with index.html)
         run: |
-          set -e
           mkdir -p _site
 
           # Playwright HTML
-          if [ -d "_artifacts/api-playwright-report" ]; then
-            mkdir -p _site/api-playwright
-            cp -r _artifacts/api-playwright-report/* _site/api-playwright/
-            [ -f "_site/api-playwright/index.html" ] || echo "<meta http-equiv='refresh' content='0; url=./index.html'>" > _site/api-playwright/index.html
+          # Playwright HTML (API)
+          if [ -d "./_artifacts/api-playwright-report" ]; then 
+            mkdir -p ./_site/api-playwright && cp -r ./_artifacts/api-playwright-report/* ./_site/api-playwright/; 
           fi
 
-          # Allure
-          if [ -d "_artifacts/api-allure-report" ]; then
-            mkdir -p _site/api-allure
-            cp -r _artifacts/api-allure-report/* _site/api-allure/
-            [ -f "_site/api-allure/index.html" ] || echo "<h1>Allure Report</h1>" > _site/api-allure/index.html
-          fi
 
           # Cucumber - OrangeHRM (artefato é um HTML)
           if [ -d "_artifacts/e2e-orangehrm-cucumber-report" ]; then
@@ -171,7 +162,6 @@ jobs:
             <h1>Relatórios de Teste</h1>
             <div class="grid">
               <div class="card"><h2>API • Playwright HTML</h2><p><a href="api-playwright/">Abrir</a></p></div>
-              <div class="card"><h2>API • Allure</h2><p><a href="api-allure/">Abrir</a></p></div>
               <div class="card"><h2>E2E • OrangeHRM (Cucumber)</h2><p><a href="e2e-orangehrm/">Abrir</a></p></div>
               <div class="card"><h2>E2E • DemoBlaze (Cucumber)</h2><p><a href="e2e-demoblaze/">Abrir</a></p></div>
             </div>
