@@ -22,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -51,7 +50,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -78,7 +76,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -105,7 +102,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -147,82 +143,31 @@ jobs:
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
-      - name: Prepare _site (with index.html)
-        shell: bash
+      - name: Prepare _site (no heredoc)
         run: |
-          set -euo pipefail
           mkdir -p _site
 
-          # Playwright HTML (API)
-          if [ -d "./_artifacts/api-playwright-report" ]; then 
+          if [ -d "./_artifacts/api-playwright-report" ]; then
             mkdir -p ./_site/api-playwright
             cp -r ./_artifacts/api-playwright-report/* ./_site/api-playwright/
           fi
 
-          # Cucumber - OrangeHRM (artefato HTML)
           if [ -d "./_artifacts/e2e-orangehrm-cucumber-report" ]; then
-            mkdir -p _site/e2e-orangehrm
-            cp ./_artifacts/e2e-orangehrm-cucumber-report/*.html _site/e2e-orangehrm/index.html || true
+            mkdir -p ./_site/e2e-orangehrm
+            cp ./_artifacts/e2e-orangehrm-cucumber-report/*.html ./_site/e2e-orangehrm/index.html || true
           fi
 
-          # Cucumber - DemoBlaze (artefato HTML)
           if [ -d "./_artifacts/e2e-demoblaze-cucumber-report" ]; then
-            mkdir -p _site/e2e-demoblaze
-            cp ./_artifacts/e2e-demoblaze-cucumber-report/*.html _site/e2e-demoblaze/index.html || true
+            mkdir -p ./_site/e2e-demoblaze
+            cp ./_artifacts/e2e-demoblaze-cucumber-report/*.html ./_site/e2e-demoblaze/index.html || true
           fi
 
-          # k6 HTML (relatório simples)
           if [ -d "./_artifacts/perf-k6-report" ]; then
-            mkdir -p _site/perf-k6
-            if [ -f "./_artifacts/perf-k6-report/k6-report.html" ]; then
-              cp ./_artifacts/perf-k6-report/k6-report.html _site/perf-k6/index.html
-            else
-              cp ./_artifacts/perf-k6-report/*.html _site/perf-k6/index.html 2>/dev/null || true
-            fi
+            mkdir -p ./_site/perf-k6
+            cp ./_artifacts/perf-k6-report/*.html ./_site/perf-k6/index.html 2>/dev/null || printf '<!doctype html><meta charset="utf-8"><body><h1>k6 - Relatório não encontrado</h1></body>' > ./_site/perf-k6/index.html
           fi
 
-          # Placeholder do k6 caso não exista relatório
-          if [ ! -f "_site/perf-k6/index.html" ]; then
-            mkdir -p _site/perf-k6
-            cat > _site/perf-k6/index.html <<'HTML'
-            <!doctype html><meta charset="utf-8">
-            <title>k6 - Sem relatório</title>
-            <body style="font-family:system-ui;padding:24px">
-            <h1>k6 - Relatório não encontrado</h1>
-            <p>Este build não gerou <code>report-k6/k6-report.html</code>.</p>
-            </body>
-            HTML
-          fi
-
-          # index.html raiz
-          cat > _site/index.html <<'HTML'
-          <!doctype html>
-          <html lang="pt-br">
-          <head>
-            <meta charset="utf-8"/>
-            <meta name="viewport" content="width=device-width,initial-scale=1"/>
-            <title>Relatórios de Testes</title>
-          <style>
-            body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu;max-width:900px;margin:40px auto;padding:0 16px;}
-            h1{margin-bottom:8px}
-            .card{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:12px 0}
-            a{color:#0b5fff;text-decoration:none}
-            a:hover{text-decoration:underline}
-            .grid{display:grid;gap:12px}
-            @media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}
-          </style>
-          </head>
-          <body>
-            <h1>Relatórios de Teste</h1>
-            <div class="grid">
-            <div class="card"><h2>API • Playwright HTML</h2><p><a href="api-playwright/">Abrir</a></p></div>
-            <div class="card"><h2>E2E • OrangeHRM (Cucumber)</h2><p><a href="e2e-orangehrm/">Abrir</a></p></div>
-            <div class="card"><h2>E2E • DemoBlaze (Cucumber)</h2><p><a href="e2e-demoblaze/">Abrir</a></p></div>
-            <div class="card"><h2>Performance • k6</h2><p><a href="perf-k6/">Abrir</a></p></div>
-          </div>
-          </body>
-          </html>
-          HTML
+          printf '<!doctype html><html lang="pt-br"><head><meta charset="utf-8"/><title>Relatórios</title><style>body{font-family:system-ui;margin:40px auto;max-width:900px;padding:0 16px}h1{margin-bottom:8px}.card{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:12px 0}.grid{display:grid;gap:12px}@media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}</style></head><body><h1>Relatórios de Teste</h1><div class="grid"><div class="card"><h2>API • Playwright</h2><p><a href="api-playwright/">Abrir</a></p></div><div class="card"><h2>E2E • OrangeHRM</h2><p><a href="e2e-orangehrm/">Abrir</a></p></div><div class="card"><h2>E2E • DemoBlaze</h2><p><a href="e2e-demoblaze/">Abrir</a></p></div><div class="card"><h2>Performance • k6</h2><p><a href="perf-k6/">Abrir</a></p></div></div></body></html>' > ./_site/index.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
