@@ -26,7 +26,7 @@ test.describe.serial('Petstore API - Delete a pet por ID - POST', () => {
                   'api_key': 'special-key'
             }
         });
-        await new Promise(r => setTimeout(r, 10000));               
+        await new Promise(r => setTimeout(r, 15000));               
         await expect(deleteRes).toBeOK();  
         
         });
