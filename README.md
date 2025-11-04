@@ -1,9 +1,10 @@
-# 🧪 Projeto de Testes Automatizados — API (Swagger PetStore), Web E2E (OrangeHRM) e Web E2E (DemoBlaze)
+# 🧪 Projeto de Testes Automatizados — API (Swagger PetStore), Web E2E (OrangeHRM), Web E2E (DemoBlaze) e Performance (K6 + Grafana)
 
-Este repositório contém **três frentes de automação**, todas utilizando **Playwright + TypeScript + Cucumber (BDD)**:
+Este repositório contém **quatro frentes de automação**, todas utilizando **Playwright + TypeScript + Cucumber (BDD)**:
 1. **Testes de API** — Swagger PetStore.
 2. **Testes End-to-End (E2E)** — OrangeHRM (demo).
 3. **Testes End-to-End (E2E)** — DemoBlaze (e-commerce, checkout completo).
+4. **Testes de Performance** — K6 + Mock API + Grafana/InfluxDB.
 
 ---
 
@@ -11,6 +12,8 @@ Este repositório contém **três frentes de automação**, todas utilizando **P
 
 - Node.js 18+ (recomendado >= 22 LTS)
 - npm 9+
+- Docker (para Grafana e InfluxDB)
+- k6 instalado localmente (`brew install k6` no macOS)
 
 ```bash
 npm ci || npm install
@@ -126,179 +129,41 @@ npm run test:e2e:demoblaze
 
 ---
 
-## ⚙️ CI/CD — GitHub Actions
+## 🚀 Parte 4 — Testes de Performance (K6 + Mock API + Grafana/InfluxDB)
 
-Pipeline configurado para:
-- Instalar dependências
-- Executar testes de API e E2E (OrangeHRM + DemoBlaze)
-- Gerar relatórios (HTML e Allure)
+### Arquivos importantes
+- **Mock API:** `tests/perf/mock-api/server.ts`
+- **Script K6:** `tests/perf/k6/load.test.ts`
+- **Orquestração:** `scripts/run-perf-ci.sh`
+- **Relatórios locais:** `report-k6/k6-report.html` e `report-k6/summary.json`
+- **Grafana/InfluxDB:** `docker-compose.yml` + `grafana/provisioning/datasources/datasource.yml`
 
-Arquivo `.github/workflows/ci.yml`:
-```yaml
-name: CI - API, E2E (Web) with Reports
+### Executar teste local (Mock + K6 + Relatório)
+```bash
+npm run perf:ci
+```
 
-on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
-  workflow_dispatch:
+### Subir stack Grafana/InfluxDB
+```bash
+npm run perf:grafana:up
+# Grafana: http://localhost:3000 (admin/admin)
+# InfluxDB: http://localhost:8086
+```
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+### Enviar métricas para Grafana
+```bash
+npm run perf:test:influx
+```
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+### Dashboard Grafana
+1. Acesse http://localhost:3000
+2. Vá em **Dashboards → Import**
+3. Use o ID `2587` (*K6 Load Testing Results*)
+4. Selecione a data source **InfluxDB-k6**
 
-jobs:
-  api-tests:
-    name: API Tests (Playwright)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install deps
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Run API tests
-        run: |
-          npx playwright test tests/api --reporter=list,html
-        env:
-          NODE_ENV: test
-
-      # (Opcional) Gera Allure se houver resultados
-      - name: Generate Allure report (if configured)
-        if: always() && hashFiles('allure-results/**') != ''
-        run: npx allure generate allure-results --clean -o allure-report
-
-      - name: Upload Playwright HTML report
-        if: always() && hashFiles('report/**') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-playwright-report
-          path: report/
-
-      - name: Upload Allure report
-        if: always() && hashFiles('allure-report/**') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: api-allure-report
-          path: allure-report/
-
-  e2e-orangehrm:
-    name: E2E OrangeHRM (Cucumber + Playwright)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install deps
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Run OrangeHRM feature(s)
-        run: |
-          npx cucumber-js --config ./cucumber.cjs tests/e2e/orangehrm/features/login.feature
-
-      - name: Upload Cucumber HTML report
-        if: always() && hashFiles('reports/cucumber-report.html') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-orangehrm-cucumber-report
-          path: reports/cucumber-report.html
-
-  e2e-demoblaze:
-    name: E2E DemoBlaze (Cucumber + Playwright)
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-
-      - name: Install deps
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Run DemoBlaze feature(s)
-        run: |
-          npx cucumber-js --config ./cucumber.cjs tests/e2e/demoblaze/features/checkout.feature
-
-      - name: Upload Cucumber HTML report
-        if: always() && hashFiles('reports/cucumber-report.html') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-demoblaze-cucumber-report
-          path: reports/cucumber-report.html
-
-  publish-pages:
-    name: Publish Reports to GitHub Pages
-    runs-on: ubuntu-latest
-    needs: [api-tests, e2e-orangehrm, e2e-demoblaze]
-    if: always()
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: ./_artifacts
-
-      - name: Prepare Pages content
-        run: |
-          mkdir -p ./_site
-          # Playwright HTML
-          if [ -d "./_artifacts/api-playwright-report" ]; then mkdir -p ./_site/api-playwright && cp -r ./_artifacts/api-playwright-report/* ./_site/api-playwright/; fi
-          # Allure (se houver)
-          if [ -d "./_artifacts/api-allure-report" ]; then mkdir -p ./_site/api-allure && cp -r ./_artifacts/api-allure-report/* ./_site/api-allure/; fi
-          # Cucumber reports
-          if [ -d "./_artifacts/e2e-orangehrm-cucumber-report" ]; then mkdir -p ./_site/e2e-orangehrm && cp -r ./_artifacts/e2e-orangehrm-cucumber-report/* ./_site/e2e-orangehrm/; fi
-          if [ -d "./_artifacts/e2e-demoblaze-cucumber-report" ]; then mkdir -p ./_site/e2e-demoblaze && cp -r ./_artifacts/e2e-demoblaze-cucumber-report/* ./_site/e2e-demoblaze/; fi
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-      
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./_site
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
+### Derrubar stack
+```bash
+npm run perf:grafana:down
 ```
 
 ---
@@ -312,25 +177,55 @@ tests/
 │   ├── orangehrm/
 │   ├── demoblaze/
 │   └── support/
-├── reports/
-│   ├── allure-results/
-│   └── cucumber-report.html
+└── perf/
+    ├── k6/
+    │   ├── load.test.ts
+    │   └── dist/
+    │       └── load.test.js
+    └── mock-api/
+        └── server.ts
+
+report/
+reports/
+report-k6/
 .github/
 └── workflows/
     └── ci.yml
+
+grafana/
+└── provisioning/
+    └── datasources/
+        └── datasource.yml
+
+scripts/
+└── run-perf-ci.sh
+
+docker-compose.yml
 ```
 
 ---
 
 ## 🧾 Scripts Principais (package.json)
+
 ```json
 {
   "scripts": {
     "test:api": "playwright test tests/api",
-    "test:e2e:orange": "cucumber-js --config ./cucumber.cjs tests/e2e/orangehrm/features/**/*.feature",
+    "report:api": "playwright show-report",
     "test:e2e:demoblaze": "cucumber-js --config ./cucumber.cjs tests/e2e/demoblaze/features/**/*.feature",
-    "allure:generate": "allure generate --clean allure-results",
-    "allure:open": "allure open allure-report"
+    "test:e2e:orange": "cucumber-js --config ./cucumber.cjs tests/e2e/orangehrm/features/**/*.feature",
+    "test:e2e": "cucumber-js",
+    "test:e2e:report": "cucumber-js --format html:reports/cucumber-report.html",
+    "allure:generate": "allure generate allure-results --clean -o allure-report",
+    "allure:open": "allure open allure-report",
+    "perf:build": "esbuild tests/perf/k6/load.test.ts --bundle --platform=browser --format=esm --external:k6 --external:k6/http --outfile=tests/perf/k6/dist/load.test.js",
+    "perf:run": "k6 run tests/perf/k6/dist/load.test.js",
+    "perf:test": "npm run perf:build && BASE_URL=http://localhost:3333 npm run perf:run",
+    "perf:ci": "bash scripts/run-perf-ci.sh",
+    "perf:grafana:up": "docker compose up -d",
+    "perf:grafana:down": "docker compose down -v",
+    "perf:run:influx": "k6 run --out influxdb=http://localhost:8086/k6 tests/perf/k6/dist/load.test.js",
+    "perf:test:influx": "npm run perf:build && BASE_URL=http://localhost:3333 npm run perf:run:influx"
   }
 }
 ```
@@ -338,4 +233,4 @@ tests/
 ---
 
 ## 🧠 Autor
-**Abner Nunes Netto** — QA Engineer (API & E2E Automation)
+**Abner Nunes Netto** — QA Engineer (API, E2E & Performance Automation)

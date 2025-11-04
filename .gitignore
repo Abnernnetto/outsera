@@ -1,22 +1,17 @@
-# Node & Playwright
-node_modules/
-playwright-report/
-test-results/
+# Relatórios
+report/
+reports/
+report-k6/
 allure-results/
 allure-report/
-reports/
-report/
+test-results/
+
+# Build / cache
 dist/
-
-# System
-.DS_Store
-Thumbs.db
-
-# Logs
+node_modules/
+playwright-report/
 *.log
-npm-debug.log*
 
-
-# Env files
-.env
-.env.*
+# Docker volumes
+influxdb_data/
+grafana_data/

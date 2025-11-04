@@ -2,6 +2,7 @@ import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
+  testIgnore: ['tests/perf/**'],
   timeout: 30 * 1000,
   reporter: [['list'],
    ['html', { outputFolder: 'report', open: 'never' }],
@@ -15,5 +16,5 @@ export default defineConfig({
     }
 
   }
-
+  
 });
