@@ -16,9 +16,14 @@ for i in {1..15}; do
   sleep 2
 done
 
+mkdir -p report-k6
+
 echo "🏋️‍♂️ Executando teste de carga (build + k6)..."
 npm run perf:build
 BASE_URL=http://localhost:3333 npm run perf:run
+
+echo "📄 Conteúdo gerado em report-k6:"
+ls -la report-k6 || true
 
 echo "🧹 Encerrando mock (PID=$MOCK_PID)..."
 kill $MOCK_PID 2>/dev/null || true

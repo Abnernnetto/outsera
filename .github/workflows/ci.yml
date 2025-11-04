@@ -182,6 +182,18 @@ jobs:
             fi
           fi
 
+          if [ ! -f "_site/perf-k6/index.html" ]; then
+            mkdir -p _site/perf-k6
+            cat > _site/perf-k6/index.html <<'HTML'
+            <!doctype html><meta charset="utf-8">
+            <title>k6 - Sem relatório</title>
+            <body style="font-family:system-ui;padding:24px">
+              <h1>k6 - Relatório não encontrado</h1>
+              <p>Este build não gerou <code>report-k6/k6-report.html</code>.</p>
+            </body>
+            HTML
+          fi
+
           # index.html raiz
           cat > _site/index.html <<'HTML'
           <!doctype html>
