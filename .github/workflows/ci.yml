@@ -100,10 +100,40 @@ jobs:
           name: e2e-demoblaze-cucumber-report
           path: reports/cucumber-report.html
 
+  perf-k6:
+    name: Performance (k6 + mock)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+
+      - name: Run k6 against local mock (HTML summary)
+        shell: bash
+        run: |
+          chmod +x scripts/run-perf-ci.sh
+          ./scripts/run-perf-ci.sh
+
+      - name: Upload k6 HTML report
+        if: ${{ always() && hashFiles('report-k6/**') != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-k6-report
+          path: report-k6/
+
   publish-pages:
     name: Publish Reports to GitHub Pages
     runs-on: ubuntu-latest
-    needs: [api-tests, e2e-orangehrm, e2e-demoblaze]
+    needs: [api-tests, e2e-orangehrm, e2e-demoblaze, perf-k6]
     if: always()
     environment:
       name: github-pages
@@ -140,6 +170,18 @@ jobs:
             cp _artifacts/e2e-demoblaze-cucumber-report/*.html _site/e2e-demoblaze/index.html || true
           fi
 
+          # k6 HTML (relatório simples)
+          if [ -d "./_artifacts/perf-k6-report" ]; then
+            mkdir -p _site/perf-k6
+            # Se existir um k6-report.html, vira index.html
+            if [ -f "./_artifacts/perf-k6-report/k6-report.html" ]; then
+              cp ./_artifacts/perf-k6-report/k6-report.html _site/perf-k6/index.html
+            else
+              # Se o bundle gerou outro nome, copia qualquer HTML e força como index
+              cp ./_artifacts/perf-k6-report/*.html _site/perf-k6/index.html 2>/dev/null || true
+            fi
+          fi
+
           # index.html raiz
           cat > _site/index.html <<'HTML'
           <!doctype html>
@@ -164,6 +206,7 @@ jobs:
               <div class="card"><h2>API • Playwright HTML</h2><p><a href="api-playwright/">Abrir</a></p></div>
               <div class="card"><h2>E2E • OrangeHRM (Cucumber)</h2><p><a href="e2e-orangehrm/">Abrir</a></p></div>
               <div class="card"><h2>E2E • DemoBlaze (Cucumber)</h2><p><a href="e2e-demoblaze/">Abrir</a></p></div>
+              <div class="card"><h2>Performance • k6</h2><p><a href="perf-k6/">Abrir</a></p></div>
             </div>
           </body>
           </html>

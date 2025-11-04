@@ -25,7 +25,7 @@ test.describe.serial('Petstore API - Find by Status - GET ', () => {
         
       const pets = await getResponse.json(); 
 
-      await new Promise(r => setTimeout(r, 12000));
+      await new Promise(r => setTimeout(r, 15000));
 
       const foundPet = pets.find(pet => Number(pet.id) === Number(createdPet.id));
       
