@@ -175,10 +175,13 @@ jobs:
 
       # 5. Accept Android licenses
       - name: Accept Android Licenses
+        shell: bash
         run: |
           export ANDROID_HOME=/usr/lib/android-sdk
           export PATH=/usr/lib/android-sdk/cmdline-tools/latest/bin:$PATH
-          yes | sdkmanager --licensesx
+
+          yes | sdkmanager --licenses
+
 
       # 6. Install SDK Packages
       - name: Install Android Packages
