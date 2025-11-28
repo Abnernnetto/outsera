@@ -148,9 +148,9 @@ jobs:
           node-version: 18
 
       # 3. Instalar Appium + Drivers
-      - name: Install Appium 2.11 + UiAutomator2
+      - name: Install Appium 3.x + UiAutomator2 driver
         run: |
-          npm install -g appium@2.11.0
+          npm install -g appium@next
           appium driver install uiautomator2
       
       # 4. Instalar dependências Android SDK
