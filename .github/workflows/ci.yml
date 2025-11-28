@@ -147,33 +147,41 @@ jobs:
         with:
           node-version: 18
 
-      # 3. Instalar Appium + Drivers
+      # 3. Instalar Appium 3.x + Drivers
       - name: Install Appium 3.x + UiAutomator2 driver
         run: |
           npm install -g appium@next
           appium driver install uiautomator2
       
-      # 4. Instalar dependências Android SDK
-      - name: Install Android SDK
+      # 4. Instalar Commandline Tools + Configurar Android SDK corretamente
+      - name: Configure Android SDK
         run: |
           sudo apt-get update
-          sudo apt-get install -y android-sdk
-          sudo apt-get install -y adb
+          sudo apt-get install -y wget unzip
 
-      # 5. Instalar Commandline Tools do Android
-      - name: Install Android commandline tools
-        run: |
           sudo mkdir -p /usr/lib/android-sdk/cmdline-tools
           cd /usr/lib/android-sdk/cmdline-tools
-          sudo wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-          sudo unzip commandlinetools-linux-9477386_latest.zip
+
+          sudo wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          sudo unzip cmdline-tools.zip
+          sudo rm cmdline-tools.zip
+
+          # renomear para "latest" (obrigatório para sdkmanager funcionar)
           sudo mv cmdline-tools latest
-          sudo rm commandlinetools-linux-9477386_latest.zip
-      
+
+          # Export ANDROID_HOME + PATH
+          echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
+          echo "PATH=/usr/lib/android-sdk/cmdline-tools/latest/bin:/usr/lib/android-sdk/platform-tools:/usr/lib/android-sdk/emulator:\$PATH" >> $GITHUB_ENV
+
+      # 5. Aceitar licenças (antes de instalar pacotes)
+      - name: Accept Android licenses
+        run: |
+          yes | sdkmanager --licenses
+
       # 6. Instalar SDK Tools necessários
       - name: Install SDK packages
         run: |
-          yes | sdkmanager --sdk_root=/usr/lib/android-sdk "platform-tools" "platforms;android-34" "build-tools;34.0.0" "system-images;android-34;default;x86_64" "emulator"
+          sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0" "system-images;android-34;default;x86_64" "emulator"
 
       # 7. Criar o emulador Android
       - name: Create Android Emulator
@@ -183,11 +191,11 @@ jobs:
       # 8. Iniciar o emulador
       - name: Start Android Emulator
         run: |
-          nohup emulator -avd test-android -no-snapshot -noaudio -no-boot-anim -no-window &
+          nohup emulator -avd test-android -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect &
           adb wait-for-device
           adb devices
 
-      # 9. Instalar Python + Robot
+      # 9. Instalar Python + Robot Framework
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
