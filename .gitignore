@@ -15,3 +15,29 @@ playwright-report/
 # Docker volumes
 influxdb_data/
 grafana_data/
+
+
+# MOBILE / APPIUM / ROBOT FRAMEWORK
+
+# Robot Framework output files (temporários)
+output.xml
+log.html
+report.html
+
+# Appium-generated temporary APKs (criados pelo driver uiautomator2)
+appium-uiautomator2-server*.apk
+appium-uiautomator2-server-debug-androidTest.apk
+
+# Arquivos temporários do Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Android / Emulator / Gradle (não necessários no repositório)
+.gradle/
+.idea/
+local.properties
+
+# MacOS
+.DS_Store

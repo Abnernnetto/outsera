@@ -5,6 +5,7 @@ Este repositório contém **quatro frentes de automação**, todas utilizando **
 2. **Testes End-to-End (E2E)** — OrangeHRM (demo).
 3. **Testes End-to-End (E2E)** — DemoBlaze (e-commerce, checkout completo).
 4. **Testes de Performance** — K6 + Mock API + Grafana/InfluxDB.
+5. **Testes Mobile** — Robot Framework + Appium + UiAutomator2.
 
 ---
 
@@ -14,6 +15,8 @@ Este repositório contém **quatro frentes de automação**, todas utilizando **
 - npm 9+
 - Docker (para Grafana e InfluxDB)
 - k6 instalado localmente (`brew install k6` no macOS)
+- Python 3.10+
+- Android SDK
 
 ```bash
 npm ci || npm install
@@ -168,15 +171,73 @@ npm run perf:grafana:down
 
 ---
 
+# 📱 Parte 5 — Testes Mobile (Robot Framework + Appium)
+
+## 📦 Instalação do Ambiente
+
+### 1. Node 18
+```bash
+nvm install 18
+nvm use 18
+```
+
+### 2. Appium + Driver UiAutomator2
+```bash
+npm install -g appium@2.11.0
+appium driver install uiautomator2
+```
+
+### 3. Python + dependências
+```bash
+pip install -r tests/mobile/requirements.txt
+```
+
+### 4. Iniciar Appium
+```bash
+appium --log-level info
+```
+
+### 5. Executar testes
+```bash
+robot -d reports/mobile tests/mobile/tests
+```
+
+---
+
 ## 📂 Estrutura Final do Projeto
 
 ```
 tests/
 ├── api/
+    ├── data/
+        └── testData.ts
+    ├── pets/
+        └── pet.create.spec.ts
+        └── pet.deletee.spec.ts
+        └── pet.findByStatus.spec.ts
+        └── pet.update.spec.ts
 ├── e2e/
-│   ├── orangehrm/
-│   ├── demoblaze/
-│   └── support/
+    ├── orangehrm/
+         └── features
+             └── login.feature
+         └── pages
+             └── login.page.ts
+         └── steps
+             └── login.steps.ts
+    ├── demoblaze/
+         └── data
+             └── orderData.ts
+         └── features
+             └── checkout.feature
+         └── pages
+             └── cart.page.ts
+             └── home.page.ts
+             └── product.page.ts
+         └── steps
+             └── checkout.steps.ts
+    ├── support/
+             └── hooks.ts
+             └── pageFixture.ts
 └── perf/
     ├── k6/
     │   ├── load.test.ts
@@ -184,6 +245,13 @@ tests/
     │       └── load.test.js
     └── mock-api/
         └── server.ts
+├── mobile/
+    ├── app/
+    ├── resources/
+    └── testes/
+        └── form.robot
+        └── login.robot
+        
 
 report/
 reports/
