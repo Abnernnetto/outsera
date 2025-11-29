@@ -167,31 +167,27 @@ jobs:
           npm install -g appium@next
           appium driver install uiautomator2
 
-      # 5. Start Appium Server
-      - name: Start Appium
-        run: |
-          nohup appium -p 4725 -pa /wd/hub > appium.log 2>&1 &
-
-      # 6. System image necessária para o emulador
+      # 5. System image necessária para o emulador
       - name: Install Android SDK system image
         run: |
           sdkmanager --install "system-images;android-34;google_apis;x86_64"
 
-      # 7. Criar o device
+
+      # 6. Criar o device
       - name: Create Device
         run: |
           echo no | avdmanager create avd -n "Pixel_7_Pro_API_34" \
             -k "system-images;android-34;google_apis;x86_64" \
             -d pixel_7_pro
 
-      # 8. Habilitar KVM (necessário para boot rápido)
+      # 7. Habilitar KVM (necessário para boot rápido)
       - name: Enable KVM group perms
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
       
-      # 9. Rodar o emulador + testes
+      # 8. Emulador + Appium + Robot Tests
       - name: Run Android Emulator + Mobile Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -200,10 +196,20 @@ jobs:
           arch: x86_64
           profile: pixel_7_pro
           script: |
+            echo "🔵 Iniciando Appium..."
+            nohup appium -p 4723 -pa /wd/hub > appium.log 2>&1 &
+            sleep 8
+
+            echo "🔵 Verificando se Appium está de pé..."
+            curl http://localhost:4723/wd/hub/status || true
+
+            echo "🔵 Dispositivos AVD disponíveis:"
             avdmanager list device
+
+            echo "🔵 Rodando testes Robot..."
             robot -d reports/mobile tests/mobile/tests
 
-      # 10. Upload Reports
+      # 9. Upload Reports
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
