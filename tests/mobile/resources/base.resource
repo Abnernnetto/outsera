@@ -12,7 +12,7 @@ Start session
     ...                 platformName=Android		
     ...                 deviceName=Pixel_7_Pro_API_34
     ...                 automationName=UIAutomator2 
-    ...                 app=${CURDIR}/../app/yodapp-beta.apk
+    ...                 app=${EXECDIR}/tests/mobile/app/yodapp-beta.apk
     ...                 udid=emulator-5554	
     ...                 autoGrantPermissions=true
     ...                 uiautomator2ServerInstallTimeout=120000
