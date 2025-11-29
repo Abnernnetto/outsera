@@ -8,7 +8,7 @@ ${START}        QAX
 ***Keywords***
 
 Start session
-    Open Application	http://localhost:4723
+    Open Application	http://localhost:4723/wd/hub
     ...                 platformName=Android		
     ...                 deviceName=Pixel_7_Pro_API_34
     ...                 automationName=UIAutomator2 
