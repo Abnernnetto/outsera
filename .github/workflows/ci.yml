@@ -149,7 +149,7 @@ jobs:
           appium driver install uiautomator2
           
       - name: Install Android SDK (official)
-        run: >
+        run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip libglu1-mesa
           sudo mkdir -p /usr/lib/android-sdk/cmdline-tools
