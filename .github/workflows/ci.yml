@@ -68,7 +68,7 @@ jobs:
         if: ${{ always() && hashFiles('reports/cucumber-report.html') != '' }}
         uses: actions/upload-artifact@v4
         with:
-          name: e2e-orangehrm-cucumber-report
+          name: e2e-bugbank-cucumber-report
           path: reports/cucumber-report.html
 
   e2e-demoblaze:
