@@ -5,7 +5,6 @@ echo "🚀 Subindo mock API (server.ts via ts-node)..."
 npx ts-node tests/perf/mock-api/server.ts &
 MOCK_PID=$!
 
-# Espera subir /health
 echo "⏳ Aguardando mock subir..."
 sleep 3
 for i in {1..15}; do
@@ -23,7 +22,7 @@ npm run perf:build
 
 BASE_URL=http://localhost:3333 \
 k6 run tests/perf/k6/dist/load.test.js \
-  --out html=report-k6/index.html \
+  --out web-dashboard=report-k6 \
   --summary-export=report-k6/summary.json
 
 echo "📄 Arquivos gerados:"
