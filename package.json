@@ -23,7 +23,8 @@
     "perf:grafana:down": "docker compose down -v",
     "perf:ci:grafana": "bash -c 'npx ts-node tests/perf/mock-api/server.ts & MOCKPID=$!; sleep 3; npm run perf:test:influx; kill $MOCKPID || true'",
     "perf:run:influx": "k6 run --out influxdb=http://localhost:8086/k6 tests/perf/k6/dist/load.test.js",
-    "perf:test:influx": "npm run perf:build && BASE_URL=http://localhost:3333 npm run perf:run:influx"
+    "perf:test:influx": "npm run perf:build && BASE_URL=http://localhost:3333 npm run perf:run:influx",
+    "perf:report": "node scripts/generate-k6-report.js"
   },
   "keywords": [],
   "type": "commonjs",

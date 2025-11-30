@@ -23,7 +23,7 @@ npm run perf:build
 BASE_URL=http://localhost:3333 npm run perf:run
 
 echo "Gerando relatório HTML (k6-reporter)..."
-npx k6-html-reporter --summary-report report-k6/summary.json --output report-k6/index.html
+npm run perf:report
 
 echo "📄 Conteúdo gerado em report-k6:"
 ls -la report-k6 || true
