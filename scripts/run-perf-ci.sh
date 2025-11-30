@@ -18,12 +18,15 @@ done
 
 mkdir -p report-k6
 
-echo "📊 Executando k6 + dashboard (gerando HTML bonito)..."
-BASE_URL=http://localhost:3333 \
-xk6-dashboard run tests/perf/k6/dist/load.test.js \
-  --out dashboard=report-k6
+echo "🏋️‍♂️ Rodando k6..."
+npm run perf:build
 
-echo "📄 Conteúdo gerado em report-k6:"
+BASE_URL=http://localhost:3333 \
+k6 run tests/perf/k6/dist/load.test.js \
+  --out html=report-k6/index.html \
+  --summary-export=report-k6/summary.json
+
+echo "📄 Arquivos gerados:"
 ls -la report-k6 || true
 
 echo "🧹 Encerrando mock (PID=$MOCK_PID)..."

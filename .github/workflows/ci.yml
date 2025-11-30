@@ -97,44 +97,34 @@ jobs:
           name: e2e-demoblaze-cucumber-report
           path: reports/cucumber-report.html
 
-  perf-k6:
-    name: Performance (k6 + mock)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: npm
+    perf-k6:
+      name: Performance (k6 + mock)
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v4
+        - uses: actions/setup-node@v4
+          with:
+            node-version: 20
+            cache: npm
 
-      - name: Install deps
-        run: npm ci
+        - name: Install deps
+          run: npm ci
 
-      - name: Setup k6
-        uses: grafana/setup-k6-action@v1
+        - name: Setup k6
+          uses: grafana/setup-k6-action@v1
 
-      - name: Install xk6-dashboard (binary from releases)
-        run: |
-          DASHBOARD_VERSION="0.7.0"
-          curl -L -o xk6-dashboard.tar.gz \
-            https://github.com/grafana/xk6-dashboard/releases/download/v${DASHBOARD_VERSION}/xk6-dashboard_${DASHBOARD_VERSION}_Linux_x86_64.tar.gz
-      
-          tar -xzf xk6-dashboard.tar.gz
-          sudo mv xk6-dashboard /usr/local/bin/
-          xk6-dashboard --version
+        - name: Run k6 against local mock (HTML summary)
+          shell: bash
+          run: |
+            chmod +x scripts/run-perf-ci.sh
+            ./scripts/run-perf-ci.sh
 
-      - name: Run k6 against local mock (HTML summary)
-        shell: bash
-        run: |
-          chmod +x scripts/run-perf-ci.sh
-          ./scripts/run-perf-ci.sh
-
-      - name: Upload k6 HTML report
-        if: ${{ always() && hashFiles('report-k6/**') != '' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: perf-k6-report
-          path: report-k6/
+        - name: Upload k6 HTML report
+          if: ${{ always() && hashFiles('report-k6/**') != '' }}
+          uses: actions/upload-artifact@v4
+          with:
+            name: perf-k6-report
+            path: report-k6/
   
   mobile-tests:
     name: Mobile Tests (Robot + Appium)
