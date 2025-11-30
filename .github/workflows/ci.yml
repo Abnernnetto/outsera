@@ -45,8 +45,8 @@ jobs:
           name: api-playwright-report
           path: report/
 
-  e2e-orangehrm:
-    name: E2E OrangeHRM (Cucumber + Playwright)
+  e2e-bugbank:
+    name: E2E Bugbank (Cucumber + Playwright)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,8 +61,8 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run OrangeHRM feature(s)
-        run: npx cucumber-js --config ./cucumber.cjs tests/e2e/orangehrm/features/login.feature
+      - name: Run Bugbank feature(s)
+        run: npx cucumber-js --config ./cucumber.cjs tests/e2e/bugbank/features/login.feature
 
       - name: Upload Cucumber HTML report
         if: ${{ always() && hashFiles('reports/cucumber-report.html') != '' }}
