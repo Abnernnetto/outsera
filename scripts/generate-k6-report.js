@@ -1,8 +1,21 @@
-import { generateReport } from "k6-html-reporter";
+const { generateReport } = require("k6-html-reporter");
+const path = require("path");
+const fs = require("fs");
 
-generateReport({
-  summaryReport: "report-k6/summary.json",
-  output: "report-k6/index.html"
-});
+(async () => {
+  const summaryPath = path.resolve("report-k6/summary.json");
 
-console.log("Relatório HTML do k6 gerado com sucesso!");
+  if (!fs.existsSync(summaryPath)) {
+    console.error("Summary.json não encontrado em report-k6/");
+    process.exit(1);
+  }
+
+  console.log("Gerando relatório HTML com k6-html-reporter...");
+
+  await generateReport({
+    jsonFile: summaryPath,
+    output: "report-k6/index.html",
+  });
+
+  console.log("✅ Relatório HTML criado em report-k6/index.html");
+})();
