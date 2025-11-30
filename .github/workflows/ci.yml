@@ -113,9 +113,6 @@ jobs:
       - name: Setup k6
         uses: grafana/setup-k6-action@v1
 
-      - name: Install k6-html-reporter
-        run: npm install -g k6-html-reporter
-
       - name: Run k6 against local mock (HTML summary)
         shell: bash
         run: |
