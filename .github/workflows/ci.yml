@@ -113,6 +113,11 @@ jobs:
       - name: Setup k6
         uses: grafana/setup-k6-action@v1
 
+      - name: Install xk6-dashboard
+        run: |
+          curl -s https://raw.githubusercontent.com/grafana/xk6-dashboard/main/install.sh | bash
+          sudo mv xk6-dashboard /usr/local/bin/
+
       - name: Run k6 against local mock (HTML summary)
         shell: bash
         run: |
