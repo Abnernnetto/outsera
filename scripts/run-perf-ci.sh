@@ -18,11 +18,10 @@ done
 
 mkdir -p report-k6
 
-echo "Executando k6 + dashboard (gerando HTML bonito)..."
+echo "📊 Executando k6 + dashboard (gerando HTML bonito)..."
 BASE_URL=http://localhost:3333 \
 xk6-dashboard run tests/perf/k6/dist/load.test.js \
   --out dashboard=report-k6
-
 
 echo "📄 Conteúdo gerado em report-k6:"
 ls -la report-k6 || true

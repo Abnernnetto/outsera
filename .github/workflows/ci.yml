@@ -113,10 +113,15 @@ jobs:
       - name: Setup k6
         uses: grafana/setup-k6-action@v1
 
-      - name: Install xk6-dashboard
+      - name: Install xk6-dashboard (binary from releases)
         run: |
-          curl -s https://raw.githubusercontent.com/grafana/xk6-dashboard/main/install.sh | bash
+          DASHBOARD_VERSION="0.7.0"
+          curl -L -o xk6-dashboard.tar.gz \
+            https://github.com/grafana/xk6-dashboard/releases/download/v${DASHBOARD_VERSION}/xk6-dashboard_${DASHBOARD_VERSION}_Linux_x86_64.tar.gz
+      
+          tar -xzf xk6-dashboard.tar.gz
           sudo mv xk6-dashboard /usr/local/bin/
+          xk6-dashboard --version
 
       - name: Run k6 against local mock (HTML summary)
         shell: bash
