@@ -151,8 +151,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      
+    
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
           
@@ -167,13 +166,10 @@ jobs:
           npm install -g appium@next
           appium driver install uiautomator2
 
-      
       - name: Install Android SDK system image
         run: |
           sdkmanager --install "system-images;android-34;google_apis;x86_64"
 
-
-      
       - name: Create Device
         run: |
           echo no | avdmanager create avd -n "Pixel_7_Pro_API_34" \
@@ -254,7 +250,14 @@ jobs:
 
           if [ -d "./_artifacts/perf-k6-report" ]; then
             mkdir -p ./_site/perf-k6
-            cp -r ./_artifacts/perf-k6-report/* ./_site/perf-k6/
+
+            INNER_DIR=$(find ./_artifacts/perf-k6-report -mindepth 1 -maxdepth 1 -type d | head -n 1)
+
+            if [ -d "$INNER_DIR" ]; then
+              cp -r "$INNER_DIR"/* ./_site/perf-k6/
+            else
+              printf '<h1>Nenhum relatório k6 encontrado</h1>' > ./_site/perf-k6/index.html
+            fi
           fi
 
 
