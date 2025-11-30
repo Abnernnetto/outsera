@@ -113,6 +113,9 @@ jobs:
       - name: Setup k6
         uses: grafana/setup-k6-action@v1
 
+      - name: Install k6-reporter (HTML generator)
+        run: npm install -g k6-reporter
+
       - name: Run k6 against local mock (HTML summary)
         shell: bash
         run: |
@@ -242,9 +245,8 @@ jobs:
             cp -r ./_artifacts/api-playwright-report/* ./_site/api-playwright/
           fi
 
-          if [ -d "./_artifacts/e2e-bugbank-cucumber-report" ]; then
-            mkdir -p ./_site/e2e-bugbank
-            cp ./_artifacts/e2e-bugbank-cucumber-report/*.html ./_site/e2e-bugbank/index.html || true
+          if [ -f "./_artifacts/e2e-bugbank-cucumber-report/cucumber-report.html" ]; then
+            cp "./_artifacts/e2e-bugbank-cucumber-report/cucumber-report.html" "./_site/e2e-bugbank/index.html"
           fi
 
           if [ -d "./_artifacts/e2e-demoblaze-cucumber-report" ]; then
@@ -273,7 +275,7 @@ jobs:
           fi
 
 
-          printf '<!doctype html><html lang="pt-br"><head><meta charset="utf-8"/><title>Relatórios</title><style>body{font-family:system-ui;margin:40px auto;max-width:900px;padding:0 16px}h1{margin-bottom:8px}.card{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:12px 0}.grid{display:grid;gap:12px}@media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}</style></head><body><h1>Relatórios de Teste</h1><div class="grid"><div class="card"><h2>API • Playwright</h2><p><a href="api-playwright/">Abrir</a></p></div><div class="card"><h2>E2E • OrangeHRM</h2><p><a href="e2e-orangehrm/">Abrir</a></p></div><div class="card"><h2>E2E • DemoBlaze</h2><p><a href="e2e-demoblaze/">Abrir</a></p></div><div class="card"><h2>Performance • k6</h2><p><a href="perf-k6/">Abrir</a></p></div><div class="card"><h2>Mobile • Appium + Robot Framework</h2><p><a href="mobile/">Abrir</a></p></div></div></body></html>' > ./_site/index.html
+          printf '<!doctype html><html lang="pt-br"><head><meta charset="utf-8"/><title>Relatórios</title><style>body{font-family:system-ui;margin:40px auto;max-width:900px;padding:0 16px}h1{margin-bottom:8px}.card{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin:12px 0}.grid{display:grid;gap:12px}@media(min-width:720px){.grid{grid-template-columns:1fr 1fr}}</style></head><body><h1>Relatórios de Teste</h1><div class="grid"><div class="card"><h2>API • Playwright</h2><p><a href="api-playwright/">Abrir</a></p></div><div class="card"><h2>E2E • BugBank</h2><p><a href="e2e-bugbank/">Abrir</a></p></div><div class="card"><h2>E2E • DemoBlaze</h2><p><a href="e2e-demoblaze/">Abrir</a></p></div><div class="card"><h2>Performance • k6</h2><p><a href="perf-k6/">Abrir</a></p></div><div class="card"><h2>Mobile • Appium + Robot Framework</h2><p><a href="mobile/">Abrir</a></p></div></div></body></html>' > ./_site/index.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

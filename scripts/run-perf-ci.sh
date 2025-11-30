@@ -18,9 +18,12 @@ done
 
 mkdir -p report-k6
 
-echo "🏋️‍♂️ Executando teste de carga (build + k6)..."
+echo "Executando teste de carga (build + k6)..."
 npm run perf:build
 BASE_URL=http://localhost:3333 npm run perf:run
+
+echo "Gerando relatório HTML bonito (k6-reporter)..."
+k6-reporter --input report-k6/summary.json --output report-k6/index.html
 
 echo "📄 Conteúdo gerado em report-k6:"
 ls -la report-k6 || true
