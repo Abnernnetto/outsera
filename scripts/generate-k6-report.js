@@ -1,4 +1,4 @@
-const { generateReport } = require("k6-html-reporter");
+const reporter = require("k6-html-reporter");
 const path = require("path");
 const fs = require("fs");
 
@@ -6,13 +6,13 @@ const fs = require("fs");
   const summaryPath = path.resolve("report-k6/summary.json");
 
   if (!fs.existsSync(summaryPath)) {
-    console.error("Summary.json não encontrado em report-k6/");
+    console.error("summary.json não encontrado em report-k6/");
     process.exit(1);
   }
 
-  console.log("Gerando relatório HTML com k6-html-reporter...");
+  console.log("📊 Gerando relatório HTML com k6-html-reporter...");
 
-  await generateReport({
+  await reporter.generateReport({
     jsonFile: summaryPath,
     output: "report-k6/index.html",
   });
