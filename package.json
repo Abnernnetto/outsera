@@ -9,7 +9,7 @@
     "test:api": "playwright test tests/api",
     "report:api": "playwright show-report",
     "test:e2e:demoblaze": "cucumber-js --config ./cucumber.cjs tests/e2e/demoblaze/features/**/*.feature",
-    "test:e2e:orange": "cucumber-js --config ./cucumber.cjs tests/e2e/orangehrm/features/**/*.feature",
+    "test:e2e:bugbank": "cucumber-js --config ./cucumber.cjs tests/e2e/bugbank/features/**/*.feature",
     "test:e2e": "cucumber-js",
     "test:e2e:report": "cucumber-js --format html:reports/cucumber-report.html",
     "allure:generate": "allure generate allure-results --clean -o allure-report",

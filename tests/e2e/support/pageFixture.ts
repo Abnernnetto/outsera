@@ -1,8 +1,9 @@
-import { Browser, BrowserContext, Page } from '@playwright/test';
+import { Browser, BrowserContext, Page } from "@playwright/test";
 
-export class PageFixture {
+class PageFixture {
   browser!: Browser;
   context!: BrowserContext;
   page!: Page;
 }
-export const pageFixture = new PageFixture();
+
+export const fixture = new PageFixture();

@@ -1,8 +1,8 @@
-# 🧪 Projeto de Testes Automatizados — API (Swagger PetStore), Web E2E (OrangeHRM), Web E2E (DemoBlaze) e Performance (K6 + Grafana)
+# 🧪 Projeto de Testes Automatizados — API (Swagger PetStore), Web E2E (BugBank), Web E2E (DemoBlaze) e Performance (K6 + Grafana)
 
 Este repositório contém **quatro frentes de automação**, todas utilizando **Playwright + TypeScript + Cucumber (BDD)**:
 1. **Testes de API** — Swagger PetStore.
-2. **Testes End-to-End (E2E)** — OrangeHRM (demo).
+2. **Testes End-to-End (E2E)** — BugBank (demo).
 3. **Testes End-to-End (E2E)** — DemoBlaze (e-commerce, checkout completo).
 4. **Testes de Performance** — K6 + Mock API + Grafana/InfluxDB.
 5. **Testes Mobile** — Robot Framework + Appium + UiAutomator2.
@@ -57,10 +57,10 @@ npm run test:api
 
 ---
 
-## 🌐 Parte 2 — Testes E2E Web (OrangeHRM + Cucumber)
+## 🌐 Parte 2 — Testes E2E Web (BugBank + Cucumber)
 
 ### Site alvo
-- [OrangeHRM Demo](https://opensource-demo.orangehrmlive.com)
+- [BugBank](https://bugbank.netlify.app/)
 
 ### Tecnologias
 - Playwright + Cucumber (BDD)
@@ -71,7 +71,7 @@ npm run test:api
 ```
 tests/
 └── e2e/
-    ├── orangehrm/
+    ├── bugbank/
     │   ├── features/
     │   ├── pages/
     │   └── steps/
@@ -82,7 +82,7 @@ tests/
 
 ### Execução
 ```bash
-npm run test:e2e:orange
+npm run test:e2e:bugbank
 ```
 
 ### Relatório Cucumber
@@ -217,7 +217,7 @@ tests/
         └── pet.findByStatus.spec.ts
         └── pet.update.spec.ts
 ├── e2e/
-    ├── orangehrm/
+    ├── bugbank/
          └── features
              └── login.feature
          └── pages
@@ -281,7 +281,7 @@ docker-compose.yml
     "test:api": "playwright test tests/api",
     "report:api": "playwright show-report",
     "test:e2e:demoblaze": "cucumber-js --config ./cucumber.cjs tests/e2e/demoblaze/features/**/*.feature",
-    "test:e2e:orange": "cucumber-js --config ./cucumber.cjs tests/e2e/orangehrm/features/**/*.feature",
+    "test:e2e:bugbank": "cucumber-js --config ./cucumber.cjs tests/e2e/bugbank/features/**/*.feature",
     "test:e2e": "cucumber-js",
     "test:e2e:report": "cucumber-js --format html:reports/cucumber-report.html",
     "allure:generate": "allure generate allure-results --clean -o allure-report",
