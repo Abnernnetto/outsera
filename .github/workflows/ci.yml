@@ -243,7 +243,8 @@ jobs:
           fi
 
           if [ -f "./_artifacts/e2e-bugbank-cucumber-report/cucumber-report.html" ]; then
-            cp "./_artifacts/e2e-bugbank-cucumber-report/cucumber-report.html" "./_site/e2e-bugbank/index.html"
+            mkdir -p ./_site/e2e-bugbank
+             cp "./_artifacts/e2e-bugbank-cucumber-report/cucumber-report.html" "./_site/e2e-bugbank/index.html"
           fi
 
           if [ -d "./_artifacts/e2e-demoblaze-cucumber-report" ]; then
@@ -251,10 +252,11 @@ jobs:
             cp ./_artifacts/e2e-demoblaze-cucumber-report/*.html ./_site/e2e-demoblaze/index.html || true
           fi
 
-          if [ -f "./_artifacts/e2e-bugbank-cucumber-report/cucumber-report.html" ]; then
-            mkdir -p ./_site/e2e-bugbank
-            cp "./_artifacts/e2e-bugbank-cucumber-report/cucumber-report.html" "./_site/e2e-bugbank/index.html"
+          if [ -d "./_artifacts/perf-k6-report" ]; then
+            mkdir -p ./_site/perf-k6
+            cp -r ./_artifacts/perf-k6-report/* ./_site/perf-k6/
           fi
+
 
           if [ -d "./_artifacts/mobile-robot-report" ]; then
             mkdir -p ./_site/mobile
