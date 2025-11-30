@@ -251,9 +251,9 @@ jobs:
             cp ./_artifacts/e2e-demoblaze-cucumber-report/*.html ./_site/e2e-demoblaze/index.html || true
           fi
 
-          if [ -d "./_artifacts/perf-k6-report" ]; then
-            mkdir -p ./_site/perf-k6
-            cp ./_artifacts/perf-k6-report/*.html ./_site/perf-k6/index.html 2>/dev/null || printf '<!doctype html><meta charset="utf-8"><body><h1>k6 - Relatório não encontrado</h1></body>' > ./_site/perf-k6/index.html
+          if [ -f "./_artifacts/e2e-bugbank-cucumber-report/cucumber-report.html" ]; then
+            mkdir -p ./_site/e2e-bugbank
+            cp "./_artifacts/e2e-bugbank-cucumber-report/cucumber-report.html" "./_site/e2e-bugbank/index.html"
           fi
 
           if [ -d "./_artifacts/mobile-robot-report" ]; then
