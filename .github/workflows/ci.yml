@@ -251,12 +251,12 @@ jobs:
           if [ -d "./_artifacts/perf-k6-report" ]; then
             mkdir -p ./_site/perf-k6
 
-            INNER_DIR=$(find ./_artifacts/perf-k6-report -mindepth 1 -maxdepth 1 -type d | head -n 1)
 
-            if [ -d "$INNER_DIR" ]; then
-              cp -r "$INNER_DIR"/* ./_site/perf-k6/
+            if [ -f "./_artifacts/perf-k6-report/k6-report.html" ]; then
+              cp ./_artifacts/perf-k6-report/k6-report.html ./_site/perf-k6/index.html
+              cp ./_artifacts/perf-k6-report/* ./_site/perf-k6/ 2>/dev/null || true
             else
-              printf '<h1>Nenhum relatório k6 encontrado</h1>' > ./_site/perf-k6/index.html
+              printf '<!doctype html><meta charset="utf-8"><body><h1>k6 - Relatório não encontrado</h1></body>' > ./_site/perf-k6/index.html
             fi
           fi
 
