@@ -1,4 +1,4 @@
-# 🧪 Projeto de Testes Automatizados — API (Swagger PetStore), Web E2E (BugBank), Web E2E (DemoBlaze) e Performance (K6 + Grafana)
+# 🧪 Projeto de Testes Automatizados — API (Swagger PetStore), Web E2E (BugBank), Web E2E (DemoBlaze) e Performance (K6 + Grafana), Mobile(yodaapp.apk)
 
 Este repositório contém **quatro frentes de automação**, todas utilizando **Playwright + TypeScript + Cucumber (BDD)**:
 1. **Testes de API** — Swagger PetStore.
